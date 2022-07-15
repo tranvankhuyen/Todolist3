@@ -4,9 +4,7 @@ function start() {
     getApi(renderTasks)
     createTasks()
 }
-
 start()
-
 function getApi(callback) {
     fetch(tasksAPI)
         .then((response) => {
@@ -14,18 +12,26 @@ function getApi(callback) {
         })
         .then(callback)
 }
-
 function renderTasks(tasks) {
-    let HTML = tasks.map((task) => {
-        return `<li class="task-item-${task.id}">
-            <h2>${task.name}</h2>
-            <button onclick="handleDelete(${task.id})">Delete</button>
-        </li>`
-    })
-    let listTasks = document.querySelector('.list-tasks')
-    listTasks.innerHTML = HTML.join('')
-}
+    tasks.map((task) => {
+        const li = document.createElement('li')
+        const h2 = document.createElement('h2')
+        const button = document.createElement('button')
+        let listTasks = document.querySelector('ul')
 
+        li.className = `task-item-${task.id}`
+        h2.appendChild(document.createTextNode(task.name))
+        li.appendChild(h2)
+        
+        // button.onclick = handleDelete(task.id)
+        button.appendChild(document.createTextNode('Delete'))
+        addEvent(button, 'click', handleDelete(task.id))
+        li.appendChild(button)
+        console.log(button)
+        
+        listTasks.appendChild(li)
+    })
+}
 function createTasks() {
     let createBtn = document.querySelector('.create')
     createBtn.onclick = () => {
@@ -35,11 +41,10 @@ function createTasks() {
             name: name,
         }
         sentTasks(task, () => {
-            getApi(renderTasks)
+            // getApi(renderTasks)
         })
     }
 }
-
 function sentTasks(data, callback) {
     let options = {
         method: 'POST',
@@ -54,9 +59,9 @@ function sentTasks(data, callback) {
         })
         .then(callback)
 }
-
-function handleDelete(id) {
+function handleDelete(id, callback) {
     let taskItems = document.querySelector('.task-item-' + id)
+    console.log(taskItems)
     taskItems.remove()
     const options = {
         method: 'DELETE',
@@ -64,10 +69,14 @@ function handleDelete(id) {
             'Content-Type': 'application/json',
         },
     }
-
     fetch(tasksAPI + '/' + id, options)
         .then((response) => {
             return response.json()
         })
         .then(callback)
 }
+function addEvent(el, type, handler) {
+    el.attachEvent ?
+      el.attachEvent('on' + type, handler) :
+      el.addEventListener(type, handler);
+  }
